@@ -5,4 +5,7 @@ node_modules/
 .env.*.local
 dist/
 build/
-*.log
+*.lognode_modules/
+.next/
+.env
+.env.local
