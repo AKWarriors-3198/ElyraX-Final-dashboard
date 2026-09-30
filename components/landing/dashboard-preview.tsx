@@ -27,18 +27,20 @@ export function DashboardPreview() {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
 
-  // Fetch real bot data
+  // Fetch real bot data through Next.js proxy
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const botInfo = await api.getBotInfo();
+        const res = await fetch("/api/bot-info");
+        if (!res.ok) throw new Error("Failed to fetch");
+        const botInfo = await res.json();
         setStats({
-          guilds: botInfo.guilds,
-          users: botInfo.users,
-          commands: botInfo.commands,
+          guilds: botInfo.guilds || 0,
+          users: botInfo.users || 0,
+          commands: botInfo.commands || 0,
         });
       } catch (err) {
-        // Use fallback values if API is unavailable
+        // API unavailable - show zeros
         setStats({ guilds: 0, users: 0, commands: 0 });
       } finally {
         setLoading(false);

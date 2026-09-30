@@ -106,8 +106,10 @@ export default async function GuildsPage() {
           <p className="text-xs text-zinc-500 max-w-sm mb-6">
             The bot hasn&apos;t joined any servers yet, or you don&apos;t have permission to manage any.
           </p>
-          <Button variant="default" size="sm">
-            Invite ElyraX to Discord
+          <Button variant="default" size="sm" asChild>
+            <a href="https://discord.com/oauth2/authorize?client_id=1550890851926937650&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener noreferrer">
+              Invite ElyraX to Discord
+            </a>
           </Button>
         </div>
       ) : (

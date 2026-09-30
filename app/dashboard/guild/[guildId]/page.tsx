@@ -14,13 +14,46 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { api } from "@/lib/api";
 
-export default function GuildOverviewPage({ params }: { params: { guildId: string } }) {
+export default async function GuildOverviewPage({ params }: { params: { guildId: string } }) {
+  // Fetch real module configurations
+  const [automodConfig, ticketConfig, levelingConfig, loggingConfig] = await Promise.all([
+    api.getAutomod(params.guildId).catch(() => null),
+    api.getTickets(params.guildId).catch(() => null),
+    api.getLeveling(params.guildId).catch(() => null),
+    api.getLogging(params.guildId).catch(() => null),
+  ]);
+
   const modules = [
-    { title: "Auto Moderation", desc: "Anti-spam, bad words, and links protection.", icon: ShieldCheck, href: `/dashboard/guild/${params.guildId}/automod`, status: "Active" },
-    { title: "Ticket System", desc: "Helpdesk for user support and inquiries.", icon: Ticket, href: `/dashboard/guild/${params.guildId}/tickets`, status: "Configured" },
-    { title: "Leveling", desc: "Gamify your community with XP and ranks.", icon: BarChart3, href: `/dashboard/guild/${params.guildId}/leveling`, status: "Active" },
-    { title: "Event Logging", desc: "Detailed audit logs for every server event.", icon: FileText, href: `/dashboard/guild/${params.guildId}/logging`, status: "Active" },
+    {
+      title: "Auto Moderation",
+      desc: "Anti-spam, bad words, and links protection.",
+      icon: ShieldCheck,
+      href: `/dashboard/guild/${params.guildId}/automod`,
+      status: automodConfig?.enabled ? "Active" : "Disabled",
+    },
+    {
+      title: "Ticket System",
+      desc: "Helpdesk for user support and inquiries.",
+      icon: Ticket,
+      href: `/dashboard/guild/${params.guildId}/tickets`,
+      status: ticketConfig?.panel_channel ? "Configured" : "Not Configured",
+    },
+    {
+      title: "Leveling",
+      desc: "Gamify your community with XP and ranks.",
+      icon: BarChart3,
+      href: `/dashboard/guild/${params.guildId}/leveling`,
+      status: levelingConfig?.enabled ? "Active" : "Disabled",
+    },
+    {
+      title: "Event Logging",
+      desc: "Detailed audit logs for every server event.",
+      icon: FileText,
+      href: `/dashboard/guild/${params.guildId}/logging`,
+      status: loggingConfig && Object.values(loggingConfig.log_enabled || {}).some(Boolean) ? "Active" : "Disabled",
+    },
   ];
 
   return (
@@ -44,7 +77,13 @@ export default function GuildOverviewPage({ params }: { params: { guildId: strin
                   <div className="h-9 w-9 rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.06] transition-colors">
                     <mod.icon className="h-4 w-4 text-zinc-400 group-hover:text-white transition-colors" />
                   </div>
-                  <span className="text-[10px] font-medium text-emerald-400 bg-emerald-400/[0.06] px-2 py-0.5 rounded-full border border-emerald-400/10">
+                  <span
+                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+                      mod.status === "Active" || mod.status === "Configured"
+                        ? "text-emerald-400 bg-emerald-400/[0.06] border-emerald-400/10"
+                        : "text-zinc-500 bg-zinc-500/[0.06] border-zinc-500/10"
+                    }`}
+                  >
                     {mod.status}
                   </span>
                 </div>

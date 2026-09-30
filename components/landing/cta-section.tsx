@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "./scroll-reveal";
 import { MagneticButton } from "./magnetic-button";
 
+const BOT_INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1550890851926937650&permissions=8&integration_type=0&scope=bot";
+
 export function CTASection() {
   return (
     <section className="py-32 px-6">
@@ -31,13 +33,15 @@ export function CTASection() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <MagneticButton strength={0.2}>
                 <Button
-                  onClick={() => signIn("discord", { callbackUrl: "/dashboard" })}
                   variant="default"
                   size="lg"
                   className="gap-2.5 h-12 px-8"
+                  asChild
                 >
-                  Add ElyraX
-                  <ArrowRight className="h-4 w-4" />
+                  <a href={BOT_INVITE_URL} target="_blank" rel="noopener noreferrer">
+                    Add ElyraX
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
                 </Button>
               </MagneticButton>
               <MagneticButton strength={0.2}>

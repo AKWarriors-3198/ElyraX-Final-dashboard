@@ -27,6 +27,7 @@ export function AdminContent() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -38,8 +39,10 @@ export function AdminContent() {
       setStats(statsData);
       setConfig(configData);
       setNotification(configData.global_notification || "");
-    } catch (err) {
+      setError(null);
+    } catch (err: any) {
       console.error("Failed to fetch admin data:", err);
+      setError(err.message || "Failed to load admin data");
       toast.error("Failed to load real-time data");
     } finally {
       setLoading(false);
@@ -61,8 +64,8 @@ export function AdminContent() {
       await api.updateAdminConfig({ maintenance_mode: newStatus });
       setConfig({ ...config, maintenance_mode: newStatus });
       toast.success(`Maintenance mode ${newStatus ? "enabled" : "disabled"}`);
-    } catch (err) {
-      toast.error("Failed to update maintenance mode");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update maintenance mode");
     } finally {
       setSaving(false);
     }
@@ -74,8 +77,8 @@ export function AdminContent() {
       await api.updateAdminConfig({ global_notification: notification });
       if (config) setConfig({ ...config, global_notification: notification });
       toast.success("Broadcast message updated");
-    } catch (err) {
-      toast.error("Failed to update broadcast message");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update broadcast message");
     } finally {
       setSaving(false);
     }
@@ -89,11 +92,27 @@ export function AdminContent() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center">
+        <div className="h-12 w-12 rounded-xl bg-red-500/[0.06] border border-red-500/10 flex items-center justify-center mb-4">
+          <Activity className="h-5 w-5 text-red-400/60" />
+        </div>
+        <h3 className="text-sm font-medium text-white mb-1">Failed to Load</h3>
+        <p className="text-xs text-zinc-500 max-w-sm mb-4">{error}</p>
+        <Button variant="outline" size="sm" onClick={() => fetchData()}>
+          <RefreshCw className="h-3.5 w-3.5 mr-2" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   const statItems = [
-    { name: "Total Users", value: stats?.total_users || "0", icon: Users, color: "text-blue-400" },
-    { name: "Active Servers", value: stats?.active_servers || "0", icon: Server, color: "text-emerald-400" },
-    { name: "API Latency", value: stats?.api_latency || "0ms", icon: Activity, color: "text-amber-400" },
-    { name: "Database Size", value: stats?.db_size || "0 MB", icon: Database, color: "text-purple-400" },
+    { name: "Total Users", value: stats?.total_users || "—", icon: Users, color: "text-blue-400" },
+    { name: "Active Servers", value: stats?.active_servers || "—", icon: Server, color: "text-emerald-400" },
+    { name: "API Latency", value: stats?.api_latency || "—", icon: Activity, color: "text-amber-400" },
+    { name: "Database Size", value: stats?.db_size || "—", icon: Database, color: "text-purple-400" },
   ];
 
   return (
@@ -120,7 +139,7 @@ export function AdminContent() {
           className="gap-2"
         >
           <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} />
-          {refreshing ? "Refreshing..." : "Real-time Mode"}
+          {refreshing ? "Refreshing..." : "Refresh"}
         </Button>
       </div>
 
@@ -135,9 +154,6 @@ export function AdminContent() {
               <div className={cn("p-2 rounded-lg bg-white/[0.03]", stat.color)}>
                 <stat.icon className="h-4 w-4" />
               </div>
-              <span className="text-[10px] font-medium text-emerald-400 bg-emerald-400/[0.06] px-2 py-0.5 rounded-full border border-emerald-400/10">
-                Live
-              </span>
             </div>
             <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
               {stat.name}
